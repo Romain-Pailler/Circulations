@@ -74,6 +74,17 @@
             margin-right: 10px;
             vertical-align: middle;
         }
+
+        #weather {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+        }
+
+        .weather-info {
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 
@@ -87,8 +98,11 @@
 
         <!-- Section for displaying air quality -->
         <div id="airQuality" class="good">
-            <img id="airQualityIcon" class="icon" src="https://img.icons8.com/ios/452/ok.png" alt="Good Air Quality" />
-            <span id="airQualityMessage">Air Quality: Good</span>
+            <span id="airQualityMessage">Qualité de l'air: Good</span>
+        </div>
+        <div id="weather">
+            <h3>Weather for Today</h3>
+            <div id="weatherDuJour" class="weather-info">08h: Loading...</div>
         </div>
     </div>
     <div id="map"></div>
@@ -130,6 +144,7 @@
 
                 // Récupérer les données de qualité de l'air
                 fetchAirQualityData();
+                fetchWeatherData(latitude, longitude);
             } catch (error) {
                 document.getElementById('department').textContent = 'Department: Error retrieving data';
                 document.getElementById('city').textContent = 'City: Error retrieving data';
@@ -206,27 +221,23 @@
                 const airQualityResponse = await axios.get('https://services3.arcgis.com/Is0UwT37raQYl9Jj/arcgis/rest/services/ind_grandest/FeatureServer/0/query?where=lib_zone%3D%27Nancy%27&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=0.0&units=esriSRUnit_Meter&returnGeodetic=false&outFields=*&returnGeometry=true&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson&token=');
 
                 const airQualityData = airQualityResponse.data.features[0].attributes;
-                const airQualityIndex = airQualityData['index'];  // Utiliser un attribut de l'API pour déterminer la qualité de l'air
+                const airQualityIndex = airQualityData['index'];
 
                 let airQuality = '';
-                let iconUrl = '';
 
                 // Logique de classification de la qualité de l'air
                 if (airQualityIndex <= 50) {
-                    airQuality = 'Good';
-                    iconUrl = 'https://img.icons8.com/ios/452/ok.png';
+                    airQuality = 'Bonne';
                 } else if (airQualityIndex <= 100) {
-                    airQuality = 'Average';
-                    iconUrl = 'https://img.icons8.com/ios/452/warning.png';
+                    airQuality = 'Moyenne';
                 } else {
-                    airQuality = 'Bad';
-                    iconUrl = 'https://img.icons8.com/ios/452/close.png';
+                    airQuality = 'Mauvaise';
                 }
 
-                // Mettre à jour le message de qualité de l'air sur la page
-                document.getElementById('airQualityMessage').textContent = `Air Quality: ${airQuality}`;
-                document.getElementById('airQualityIcon').src = iconUrl;
 
+                // Mettre à jour le message de qualité de l'air sur la page
+                const airQualityMessage = document.getElementById('airQualityMessage');
+                airQualityMessage.textContent = `Qualité de l'air: ${airQuality}`;  // Remplacer le texte
                 // Mettre à jour l'interface avec le bon style
                 const airQualityDiv = document.getElementById('airQuality');
                 if (airQuality === 'Good') {
@@ -238,6 +249,54 @@
                 }
             } catch (error) {
                 console.error('Error fetching air quality data:', error);
+            }
+        }
+        async function fetchWeatherData(lat, long) {
+            try {
+                const weatherResponse = await axios.get(`https://www.infoclimat.fr/public-api/gfs/json?_ll=${lat},${long}&_auth=ARsDFFIsBCZRfFtsD3lSe1Q8ADUPeVRzBHgFZgtuAH1UMQNgUTNcPlU5VClSfVZkUn8AYVxmVW0Eb1I2WylSLgFgA25SNwRuUT1bPw83UnlUeAB9DzFUcwR4BWMLYwBhVCkDb1EzXCBVOFQoUmNWZlJnAH9cfFVsBGRSPVs1UjEBZwNkUjIEYVE6WyYPIFJjVGUAZg9mVD4EbwVhCzMAMFQzA2JRMlw5VThUKFJiVmtSZQBpXGtVbwRlUjVbKVIuARsDFFIsBCZRfFtsD3lSe1QyAD4PZA%3D%3D&_c=19f3aa7d766b6ba91191c8be71dd1ab2`);
+                const weatherData = weatherResponse.data;
+
+                // Récupérer l'heure actuelle et déterminer les heures à afficher (13h et 19h)
+                const currentDate = new Date();
+                const currentHour = currentDate.getHours();
+                const formattedDate = currentDate.toISOString().split('T')[0]; // Format date "YYYY-MM-DD"
+
+                // Déterminer quelle heure est la plus proche (13h ou 19h)
+                const hour8Data = weatherData[`${formattedDate} 08:00:00`];
+                const hour13Data = weatherData[`${formattedDate} 13:00:00`];
+                const hour19Data = weatherData[`${formattedDate} 19:00:00`];
+
+                // Afficher les informations pour l'heure la plus proche
+                if (currentHour < 11) {
+                    displayWeather(hour8Data, 8);
+
+                } else if (currentHour < 16) {
+                    // Afficher 19h si l'heure actuelle est après 16h
+                    displayWeather(hour13Data, 13);
+
+                } else {
+                    displayWeather(hour19Data, 19);
+                }
+            } catch (error) {
+                console.error('Error fetching weather data:', error);
+                document.getElementById('weatherDuJour').textContent = '13h: Error retrieving data';
+                document.getElementById('weatherDuJour').textContent = '19h: Error retrieving data';
+            }
+        }
+
+        // Fonction pour afficher la météo dans la div
+        function displayWeather(weatherData, hour) {
+            if (weatherData) {
+                const temperature = (weatherData.temperature["2m"] - 273.15).toFixed(1);  // Conversion Kelvin -> Celsius
+                const windSpeed = weatherData.vent_moyen["10m"].toFixed(1);
+                document.getElementById('weatherDuJour').textContent = '';
+                if (hour === 8) {
+                    document.getElementById('weatherDuJour').textContent = `Ce matin: Temp: ${temperature}°C, Wind: ${windSpeed} km/h`;
+                } else if (hour === 13) {
+                    document.getElementById('weatherDuJour').textContent = `Ce midi: Temp: ${temperature}°C, Wind: ${windSpeed} km/h`;
+                } else {
+                    document.getElementById('weatherDuJour').textContent = `Ce soir: Temp: ${temperature}°C, Wind: ${windSpeed} km/h`;
+                }
             }
         }
 
