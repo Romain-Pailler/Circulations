@@ -90,19 +90,16 @@
 
 <body>
     <div class="container">
-        <h1>Your Location, Velolib Stations, and Air Quality</h1>
-        <p id="department">Department: Loading...</p>
-        <p id="city">City: Loading...</p>
-        <p id="latitude">Latitude: Loading...</p>
-        <p id="longitude">Longitude: Loading...</p>
+        <h1>Circulations (Pollution, Météo, Vélos)</h1>
+        <p id="city">Ville: Chargement...</p>
 
         <!-- Section for displaying air quality -->
         <div id="airQuality" class="good">
-            <span id="airQualityMessage">Qualité de l'air: Good</span>
+            <span id="airQualityMessage">Qualité de l'air: Bonne</span>
         </div>
         <div id="weather">
-            <h3>Weather for Today</h3>
-            <div id="weatherDuJour" class="weather-info">08h: Loading...</div>
+            <h3>Météo du Jour</h3>
+            <div id="weatherDuJour" class="weather-info">Chargement ...</div>
         </div>
     </div>
     <div id="map"></div>
@@ -130,11 +127,7 @@
                 latitude = data.latitude || 'Indisponible';
                 longitude = data.longitude || 'Indisponible';
 
-                // Mettre à jour le DOM avec les valeurs
-                document.getElementById('department').textContent = `Department: ${department}`;
-                document.getElementById('city').textContent = `City: ${city}`;
-                document.getElementById('latitude').textContent = `Latitude: ${latitude}`;
-                document.getElementById('longitude').textContent = `Longitude: ${longitude}`;
+                document.getElementById('city').textContent = `Ville: ${city}`;
 
                 // Initialiser la carte avec la position de l'utilisateur
                 initialiserCarte(latitude, longitude);
@@ -146,10 +139,7 @@
                 fetchAirQualityData();
                 fetchWeatherData(latitude, longitude);
             } catch (error) {
-                document.getElementById('department').textContent = 'Department: Error retrieving data';
-                document.getElementById('city').textContent = 'City: Error retrieving data';
-                document.getElementById('latitude').textContent = 'Latitude: Error retrieving data';
-                document.getElementById('longitude').textContent = 'Longitude: Error retrieving data';
+                document.getElementById('city').textContent = 'Ville: Erreur';
                 console.error('Error retrieving location:', error);
             }
         }
@@ -173,7 +163,7 @@
 
             // Ajouter un marqueur pour la position de l'utilisateur avec l'icône personnalisée
             L.marker([lat, lon], { icon: userIcon }).addTo(map)
-                .bindPopup("You are here!")
+                .bindPopup("Vous êtes ici !")
                 .openPopup();
         }
 
@@ -204,8 +194,8 @@
                     // Ajouter un marqueur pour chaque station
                     const popupContent = `
                         <strong>${name}</strong><br>
-                        Available bikes: ${num_bikes_available}<br>
-                        Free docks: ${num_docks_available}
+                        Vélos disponibles: ${num_bikes_available}<br>
+                        Places disponibles: ${num_docks_available}
                     `;
                     L.marker([lat, lon]).addTo(map)
                         .bindPopup(popupContent);
@@ -255,6 +245,7 @@
             try {
                 const weatherResponse = await axios.get(`https://www.infoclimat.fr/public-api/gfs/json?_ll=${lat},${long}&_auth=ARsDFFIsBCZRfFtsD3lSe1Q8ADUPeVRzBHgFZgtuAH1UMQNgUTNcPlU5VClSfVZkUn8AYVxmVW0Eb1I2WylSLgFgA25SNwRuUT1bPw83UnlUeAB9DzFUcwR4BWMLYwBhVCkDb1EzXCBVOFQoUmNWZlJnAH9cfFVsBGRSPVs1UjEBZwNkUjIEYVE6WyYPIFJjVGUAZg9mVD4EbwVhCzMAMFQzA2JRMlw5VThUKFJiVmtSZQBpXGtVbwRlUjVbKVIuARsDFFIsBCZRfFtsD3lSe1QyAD4PZA%3D%3D&_c=19f3aa7d766b6ba91191c8be71dd1ab2`);
                 const weatherData = weatherResponse.data;
+                console.log(weatherData);
 
                 // Récupérer l'heure actuelle et déterminer les heures à afficher (13h et 19h)
                 const currentDate = new Date();
@@ -262,13 +253,13 @@
                 const formattedDate = currentDate.toISOString().split('T')[0]; // Format date "YYYY-MM-DD"
 
                 // Déterminer quelle heure est la plus proche (13h ou 19h)
-                const hour8Data = weatherData[`${formattedDate} 08:00:00`];
+                const hour8Data = weatherData[`${formattedDate} 07:00:00`];
                 const hour13Data = weatherData[`${formattedDate} 13:00:00`];
                 const hour19Data = weatherData[`${formattedDate} 19:00:00`];
 
                 // Afficher les informations pour l'heure la plus proche
                 if (currentHour < 11) {
-                    displayWeather(hour8Data, 8);
+                    displayWeather(hour8Data, 7);
 
                 } else if (currentHour < 16) {
                     // Afficher 19h si l'heure actuelle est après 16h
@@ -290,7 +281,7 @@
                 const temperature = (weatherData.temperature["2m"] - 273.15).toFixed(1);  // Conversion Kelvin -> Celsius
                 const windSpeed = weatherData.vent_moyen["10m"].toFixed(1);
                 document.getElementById('weatherDuJour').textContent = '';
-                if (hour === 8) {
+                if (hour === 7) {
                     document.getElementById('weatherDuJour').textContent = `Ce matin: Temp: ${temperature}°C, Wind: ${windSpeed} km/h`;
                 } else if (hour === 13) {
                     document.getElementById('weatherDuJour').textContent = `Ce midi: Temp: ${temperature}°C, Wind: ${windSpeed} km/h`;
