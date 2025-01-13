@@ -58,11 +58,11 @@
   async function fetchVelolibStations() {
       try {
           // latitude et longitude
-          const stationInfoResponse = await axios.get('http://api.cyclocity.fr/contracts/nancy/gbfs/station_information.json');
+          const stationInfoResponse = await axios.get('https://api.cyclocity.fr/contracts/nancy/gbfs/station_information.json');
           const stationInfo = stationInfoResponse.data.data.stations;
 
           // disponibilité des vélos et des places
-          const stationStatusResponse = await axios.get('http://api.cyclocity.fr/contracts/nancy/gbfs/station_status.json');
+          const stationStatusResponse = await axios.get('https://api.cyclocity.fr/contracts/nancy/gbfs/station_status.json');
           const stationStatus = stationStatusResponse.data.data.stations;
 
           const stationStatusMap = {};
@@ -94,7 +94,7 @@
   // Fonction pour récupérer les données de qualité de l'air
   async function fetchAirQualityData() {
       try {
-          const airQualityResponse = await axios.get('http://services3.arcgis.com/Is0UwT37raQYl9Jj/arcgis/rest/services/ind_grandest/FeatureServer/0/query?where=lib_zone%3D%27Nancy%27&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=0.0&units=esriSRUnit_Meter&returnGeodetic=false&outFields=*&returnGeometry=true&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson&token=');
+          const airQualityResponse = await axios.get('https://services3.arcgis.com/Is0UwT37raQYl9Jj/arcgis/rest/services/ind_grandest/FeatureServer/0/query?where=lib_zone%3D%27Nancy%27&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=0.0&units=esriSRUnit_Meter&returnGeodetic=false&outFields=*&returnGeometry=true&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson&token=');
 
           const airQualityData = airQualityResponse.data.features[0].attributes;
           const airQualityIndex = airQualityData['index'];
